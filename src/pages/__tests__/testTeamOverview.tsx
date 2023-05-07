@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import * as API from '../../api';
-import TeamOverview from '../TeamOverview';
+import TeamOverview from '../TeamOverview/TeamOverview';
 
 jest.mock('react-router-dom', () => ({
     useLocation: () => ({
