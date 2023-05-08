@@ -1,57 +1,57 @@
-import * as React from 'react';
+import React, {useEffect, useState} from 'react';
 import {useLocation, useParams} from 'react-router-dom';
 import {ListItem, UserData} from 'types';
-import {getTeamOverview, getUserData} from '../api';
-import Card from '../components/Card';
-import {Container} from '../components/GlobalComponents';
-import Header from '../components/Header';
-import List from '../components/List';
 
-var mapArray = (users: UserData[]) => {
-    return users.map(u => {
-        var columns = [
-            {
-                key: 'Name',
-                value: `${u.firstName} ${u.lastName}`,
-            },
-            {
-                key: 'Display Name',
-                value: u.displayName,
-            },
-            {
-                key: 'Location',
-                value: u.location,
-            },
-        ];
-        return {
-            id: u.id,
-            url: `/user/${u.id}`,
-            columns,
-            navigationProps: u,
-        };
-    }) as ListItem[];
+import {getTeamOverview, getUserData} from '../api';
+import {Card, List, Header} from '../components';
+
+const mapUserToListItem = (user: UserData): ListItem => {
+    const {id, firstName, lastName, displayName, location} = user;
+
+    const columns = [
+        {
+            key: 'Name',
+            value: `${firstName} ${lastName}`,
+        },
+        {
+            key: 'Display Name',
+            value: displayName,
+        },
+        {
+            key: 'Location',
+            value: location,
+        },
+    ];
+    return {
+        id,
+        url: `/user/${id}`,
+        columns,
+        navigationProps: user,
+    };
 };
 
-var mapTLead = tlead => {
-    var columns = [
+const mapTeamLeadToCard = (teamLead: UserData) => {
+    const {id, firstName, lastName, displayName, location} = teamLead;
+
+    const columns = [
         {
             key: 'Team Lead',
             value: '',
         },
         {
             key: 'Name',
-            value: `${tlead.firstName} ${tlead.lastName}`,
+            value: `${firstName} ${lastName}`,
         },
         {
             key: 'Display Name',
-            value: tlead.displayName,
+            value: displayName,
         },
         {
             key: 'Location',
-            value: tlead.location,
+            value: location,
         },
     ];
-    return <Card columns={columns} url={`/user/${tlead.id}`} navigationProps={tlead} />;
+    return <Card columns={columns} url={`/user/${id}`} navigationProps={teamLead} />;
 };
 
 interface PageState {
@@ -62,34 +62,51 @@ interface PageState {
 const TeamOverview = () => {
     const location = useLocation();
     const {teamId} = useParams();
-    const [pageData, setPageData] = React.useState<PageState>({});
-    const [isLoading, setIsLoading] = React.useState<boolean>(true);
+    const [pageData, setPageData] = useState<PageState>({});
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [filteredMembers, setFilteredMembers] = useState<UserData[]>([]);
 
-    React.useEffect(() => {
-        var getTeamUsers = async () => {
-            const {teamLeadId, teamMemberIds = []} = await getTeamOverview(teamId);
-            const teamLead = await getUserData(teamLeadId);
+    useEffect(() => {
+        const fetchTeamUsers = async () => {
+            try {
+                const {teamLeadId, teamMemberIds = []} = await getTeamOverview(teamId);
+                const teamLead = await getUserData(teamLeadId);
 
-            const teamMembers = [];
-            for(var teamMemberId of teamMemberIds) {
-                const data = await getUserData(teamMemberId);
-                teamMembers.push(data);
+                const teamMembers = await Promise.all(teamMemberIds.map(getUserData));
+
+                setPageData({
+                    teamLead,
+                    teamMembers,
+                });
+                setFilteredMembers(teamMembers);
+                setIsLoading(false);
+            } catch (error) {
+                Error('Error fetching team users:', error);
             }
-            setPageData({
-                teamLead,
-                teamMembers,
-            });
-            setIsLoading(false);
         };
-        getTeamUsers();
+
+        fetchTeamUsers();
     }, [teamId]);
 
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const {value} = event.target;
+
+        const filtered = pageData?.teamMembers?.filter(
+            member =>
+                member.firstName.toLowerCase().includes(value.toLowerCase()) ||
+                member.lastName.toLowerCase().includes(value.toLowerCase())
+        );
+
+        setFilteredMembers(filtered || []);
+    };
+
     return (
-        <Container>
+        <React.Fragment>
             <Header title={`Team ${location.state.name}`} />
-            {!isLoading && mapTLead(pageData.teamLead)}
-            <List items={mapArray(pageData?.teamMembers ?? [])} isLoading={isLoading} />
-        </Container>
+            <input type="text" onChange={handleChange} />
+            {!isLoading && mapTeamLeadToCard(pageData.teamLead)}
+            <List items={filteredMembers.map(mapUserToListItem)} isLoading={isLoading} />
+        </React.Fragment>
     );
 };
 

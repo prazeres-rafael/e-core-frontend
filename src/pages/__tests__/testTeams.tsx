@@ -1,5 +1,5 @@
-import * as React from 'react';
-import {fireEvent, render, screen, waitFor, act} from '@testing-library/react';
+import React from 'react';
+import {render, screen, waitFor} from '@testing-library/react';
 import * as API from '../../api';
 import Teams from '../Teams';
 
@@ -22,6 +22,7 @@ describe('Teams', () => {
 
     afterEach(() => {
         jest.clearAllTimers();
+        jest.restoreAllMocks();
     });
 
     afterAll(() => {
@@ -29,11 +30,19 @@ describe('Teams', () => {
     });
 
     it('should render spinner while loading', async () => {
-        // TODO - Add code for this test
+        jest.spyOn(API, 'getTeams').mockResolvedValue([]);
+
+        render(<Teams />);
+
+        expect(screen.getByTestId('spinner')).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
+        });
     });
 
     it('should render teams list', async () => {
-        jest.spyOn(API, 'getTeams').mockResolvedValue([
+        const mockTeams = [
             {
                 id: '1',
                 name: 'Team1',
@@ -42,7 +51,9 @@ describe('Teams', () => {
                 id: '2',
                 name: 'Team2',
             },
-        ]);
+        ];
+
+        jest.spyOn(API, 'getTeams').mockResolvedValue(mockTeams);
 
         render(<Teams />);
 

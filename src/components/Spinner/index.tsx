@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled, {keyframes} from 'styled-components';
 
 const spinnerAnimation = keyframes`
-from {
+    from {
         transform: rotate(0deg);
     }
     to {
@@ -19,6 +19,8 @@ const SpinnerBody = styled.div`
     animation: ${spinnerAnimation} 800ms linear infinite;
 `;
 
-export const Spinner = () => {
+const Spinner = () => {
     return <SpinnerBody data-testid="spinner" />;
 };
+
+export default Spinner;

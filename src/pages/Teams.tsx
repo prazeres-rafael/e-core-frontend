@@ -1,11 +1,10 @@
-import * as React from 'react';
+import React, {useState, useEffect, ChangeEvent} from 'react';
 import {ListItem, Teams as TeamsList} from 'types';
-import {getTeams as fetchTeams} from '../api';
-import Header from '../components/Header';
-import List from '../components/List';
-import {Container} from '../components/GlobalComponents';
 
-var MapT = (teams: TeamsList[]) => {
+import {getTeams as fetchTeams} from '../api';
+import {Header, List, Search} from '../components';
+
+const mapTeamsToListItems = (teams: TeamsList[]): ListItem[] => {
     return teams.map(team => {
         var columns = [
             {
@@ -23,23 +22,37 @@ var MapT = (teams: TeamsList[]) => {
 };
 
 const Teams = () => {
-    const [teams, setTeams] = React.useState<any>([]);
-    const [isLoading, setIsLoading] = React.useState<any>(true);
+    const [teams, setTeams] = useState<TeamsList[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [filteredTeams, setFilteredTeams] = useState<TeamsList[]>([]);
 
-    React.useEffect(() => {
-        const getTeams = async () => {
-            const response = await fetchTeams();
-            setTeams(response);
-            setIsLoading(false);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const fetchedTeams = await fetchTeams();
+                setTeams(fetchedTeams);
+                setFilteredTeams(fetchedTeams);
+                setIsLoading(false);
+            } catch (error) {
+                Error('Error fetching teams:', error);
+            }
         };
-        getTeams();
+        fetchData();
     }, []);
 
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const typedValue = event.target.value;
+        const searchText = typedValue.toLowerCase();
+        const searchResults = teams.filter(team => team.name.toLowerCase().includes(searchText));
+        setFilteredTeams(searchResults);
+    };
+
     return (
-        <Container>
+        <React.Fragment>
             <Header title="Teams" showBackButton={false} />
-            <List items={MapT(teams)} isLoading={isLoading} />
-        </Container>
+            <Search onChange={handleChange} />
+            <List items={mapTeamsToListItems(filteredTeams)} isLoading={isLoading} />
+        </React.Fragment>
     );
 };
 

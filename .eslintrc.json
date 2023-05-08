@@ -70,7 +70,7 @@
   },
   "plugins": ["react", "no-only-tests", "react-hooks", "testing-library", "jest", "no-storage"],
   "rules": {
-    "linebreak-style": ["error", "unix"],
+    "linebreak-style": 0,
     "quotes": ["error", "single"],
     "semi": ["error", "always"],
     "arrow-body-style": 0,
