@@ -2,7 +2,7 @@ import React from 'react';
 import {useLocation} from 'react-router-dom';
 import {UserData} from 'types';
 
-import {Card, Header} from '../../components';
+import {Card, Header} from '../components';
 
 const mapUserToCard = (user: UserData) => {
     const columns = [

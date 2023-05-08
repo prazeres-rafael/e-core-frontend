@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {useLocation, useParams} from 'react-router-dom';
 import {ListItem, UserData} from 'types';
 
-import {getTeamOverview, getUserData} from '../../api';
-import {Card, List, Header} from '../../components';
+import {getTeamOverview, getUserData} from '../api';
+import {Card, List, Header} from '../components';
 
 const mapUserToListItem = (user: UserData): ListItem => {
     const {id, firstName, lastName, displayName, location} = user;

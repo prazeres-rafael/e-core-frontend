@@ -1,12 +1,12 @@
-import * as React from 'react';
+import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import * as API from '../../api';
-import TeamOverview from '../TeamOverview/TeamOverview';
+import TeamOverview from '../TeamOverview';
 
 jest.mock('react-router-dom', () => ({
     useLocation: () => ({
         state: {
-            teamName: 'Some Team',
+            name: 'Some Team',
         },
     }),
     useNavigate: () => ({}),
@@ -16,16 +16,12 @@ jest.mock('react-router-dom', () => ({
 }));
 
 describe('TeamOverview', () => {
-    beforeAll(() => {
-        jest.useFakeTimers();
+    beforeEach(() => {
+        jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress console errors
     });
 
     afterEach(() => {
-        jest.clearAllTimers();
-    });
-
-    afterAll(() => {
-        jest.useRealTimers();
+        jest.clearAllMocks();
     });
 
     it('should render team overview users', async () => {
@@ -42,13 +38,13 @@ describe('TeamOverview', () => {
             location: '',
             avatar: '',
         };
-        jest.spyOn(API, 'getTeamOverview').mockImplementationOnce(() => Promise.resolve({} as any));
-        jest.spyOn(API, 'getUserData').mockImplementationOnce(() => Promise.resolve({} as any));
+        jest.spyOn(API, 'getTeamOverview').mockResolvedValue(teamOverview);
+        jest.spyOn(API, 'getUserData').mockResolvedValue(userData);
 
         render(<TeamOverview />);
 
         await waitFor(() => {
-            expect(screen.queryAllByText('userData')).toHaveLength(4);
+            expect(screen.queryAllByText('userData userData')).toHaveLength(4);
         });
     });
 });

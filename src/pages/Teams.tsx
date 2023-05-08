@@ -1,8 +1,8 @@
 import React, {useState, useEffect, ChangeEvent} from 'react';
 import {ListItem, Teams as TeamsList} from 'types';
 
-import {getTeams as fetchTeams} from '../../api';
-import {Header, List, Search} from '../../components';
+import {getTeams as fetchTeams} from '../api';
+import {Header, List, Search} from '../components';
 
 const mapTeamsToListItems = (teams: TeamsList[]): ListItem[] => {
     return teams.map(team => {
